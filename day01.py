@@ -62,41 +62,36 @@ def do_d1p1(fpath: str) -> int:
 
 
 def get_p2_line_score(input_line: str) -> int:
-    tokens = (
-        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-        "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    )
-    tokens_map = {t: f"{i}" for i, t in enumerate(tokens, 1)}
+    str_tokens = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine",)
+    int_tokens = ("1", "2", "3", "4", "5", "6", "7", "8", "9",)
+
+    str_tokens_map = {t: f"{i}" for i, t in enumerate(str_tokens, 1)}
+
+    left_tok = None
+    left_indx = len(input_line)
+
+    right_tok = None
+    right_indx = -1
+
+    for tok in str_tokens + int_tokens:
+        li = input_line.find(tok)
+        if li > -1:
+            if li < left_indx:
+                left_indx = li
+                left_tok = tok
+
+        ri = input_line.rfind(tok)
+        if ri > -1:
+            if ri > right_indx:
+                right_indx = ri
+                right_tok = tok
+
     digit = ""
-
-    # Try to find the each token in the string and track the index they are found in.
-    left_tok_track = dict()
-    right_tok_track = dict()
-
-    for tok in tokens:
-        left_indx = input_line.find(tok)
-        if left_indx > -1:
-            left_tok_track[left_indx] = tok
-
-        right_indx = input_line.rfind(tok)
-        if right_indx > -1:
-            right_tok_track[right_indx] = tok
-
-    # First digit.
-    first_digit = left_tok_track[min(left_tok_track)]
-
-    if first_digit.isdigit():
-        digit += first_digit
-    else:
-        digit += tokens_map[first_digit]
-
-    # Last digit.
-    last_digit = right_tok_track[max(right_tok_track)]
-
-    if last_digit.isdigit():
-        digit += last_digit
-    else:
-        digit += tokens_map[last_digit]
+    for tok in (left_tok, right_tok):
+        if tok.isdigit():
+            digit += tok
+        else:
+            digit += str_tokens_map[tok]
 
     return int(digit)
 
