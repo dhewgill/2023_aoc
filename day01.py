@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+"""
+Trebuchet calibration.
+"""
 import argparse
 import logging
 import sys
