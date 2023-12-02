@@ -32,7 +32,7 @@ def main(argv=None):
 
     # Part 2.
     game_power = do_d2p2(P2_DATFILE)
-    print(f"d1p2 = {game_power}") # 63307
+    print(f"d2p2 = {game_power}") # 63307
 
     print("\n\nEnd")
 
