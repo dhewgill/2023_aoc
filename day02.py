@@ -39,62 +39,71 @@ def main(argv=None):
 
 # ####################################
 # --------------  Util  --------------
+def parse_games(games):
+    """
+    Parse a game to the form:
+    {
+        "id": <int>,
+        "rounds": [
+            {"red": <int>, "green": <int>, "blue": <int>},
+            {...},
+            ...,
+        ],
+    }
+    """
+    for game in games:
+        # Get game id.
+        g_id, rest = game.split(": ")
+        g_id = int(g_id.split()[-1])
+        this_game = {"id": g_id, "rounds": []}
+
+        # Get the game rounds.
+        rounds = rest.split("; ")
+        for r in rounds:
+            this_round = {"red": 0, "green": 0, "blue": 0}
+            draw = r.split(", ")
+
+            for d in draw:
+                num, colour = d.split()
+                this_round[colour] = int(num)
+
+            this_game["rounds"].append(this_round)
+
+        yield this_game
+
 
 def do_d2p1(fpath: str) -> int:
     flines = parse_file(fpath)
 
     possible = {"red": 12, "green": 13, "blue": 14}
+    possible_sum = 0
 
-    games = []
-    for line in flines:
-        # Get game id.
-        g_id, rest = line.split(": ")
-        g_id = int(g_id.split()[-1])
-        game_is_possible = True
+    for game in parse_games(flines):
+        this_sum = game["id"]
 
-        # Get the game records.
-        records = rest.split("; ")
-        for r in records:
-            tally = {k: 0 for k in possible}
-            draw = r.split(", ")
-            for d in draw:
-                num, color = d.split()
-                tally[color] += int(num)
-
-            if any(v > possible[k] for k, v in tally.items()):
-                game_is_possible = False
+        for this_round in game["rounds"]:
+            if any(this_round[k] > v for k, v in possible.items()):
+                this_sum = 0
                 break
 
-        if game_is_possible:
-            games.append(g_id)
+        possible_sum += this_sum
 
-    return sum(games)
+    return possible_sum
 
 
 def do_d2p2(fpath: str) -> int:
     flines = parse_file(fpath)
 
-    games = []
-    for line in flines:
-        # Get game id.
-        g_id, rest = line.split(": ")
-        g_id = int(g_id.split()[-1])
-
-        tallies = {"red": [], "green": [], "blue": []}
-
-        # Get the game records.
-        records = rest.split("; ")
-        for r in records:
-            draw = r.split(", ")
-            for d in draw:
-                num, color = d.split()
-                tallies[color].append(int(num))
+    power_sum = 0
+    for game in parse_games(flines):
         game_pwr = 1
-        for v in tallies.values():
-            game_pwr *= max(v)
-        games.append(game_pwr)
 
-    return sum(games)
+        for colour in game["rounds"][0]:
+            game_pwr *= max(v[colour] for v in game["rounds"])
+
+        power_sum += game_pwr
+
+    return power_sum
 
 
 # ####################################
