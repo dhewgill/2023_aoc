@@ -132,7 +132,6 @@ def do_d3p2(fpath: str) -> int:
     for coord, s_val in symbols.items():
         if s_val == "*":
             adjacents = get_adjacent_vals(coord, part_nums)
-            print(f"{coord}: {adjacents}")
             if len(adjacents) == 2:
                 gear_ratio_sum += int(adjacents[0][0]) * int(adjacents[1][0])
 
