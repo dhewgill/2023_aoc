@@ -42,7 +42,7 @@ def main(argv=None):
 def parse_cards(card_pile: list) -> dict:
     """
     Parse cards into dicts of
-        {card_num: <int>, win_nums: <tuple>, my_nums: tuple()}
+        {card_num: <int>, win_nums: <tuple>, my_nums: <tuple>}
     """
     for card in card_pile:
         this_card = {"card_num": None, "win_nums": None, "my_nums": None}
