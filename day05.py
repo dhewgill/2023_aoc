@@ -32,7 +32,7 @@ def main(argv=None):
 
     # Part 2.
     loc2 = do_d5p2(P2_DATFILE)
-    print(f"d5p2 = {loc2}")
+    print(f"d5p2 = {loc2}") # 50855035
 
     print("\n\nEnd")
 
@@ -116,24 +116,31 @@ def do_d5p2(fpath: str) -> int:
     mappings = parse_mappings(flines)
     #print(mappings)
 
-    seed_rngs = [(s, sr) for s, sr in zip(seeds[::2], seeds[1::2])]
+    seed_rngs = tuple((s, sr) for s, sr in zip(seeds[::2], seeds[1::2]))
     print(seed_rngs)
-    seed_locs = []
-    for seed_s, seed_rng in seed_rngs:
-        for seed in range(seed_s, seed_s + seed_rng): # <- Horribly inefficient, and never finishes.
+    seed_locs = None
+    for i, seeds_rng in enumerate(seed_rngs): #seed_s, seed_rng in seed_rngs:
+
+        seed_s, seed_rng = seeds_rng
+        print(f"Processing seeds: {seed_s}, {seed_rng} [{i} of {len(seed_rngs)}]")
+
+        for seed in range(seed_s, seed_s + seed_rng): # <- Horribly inefficient, finishes in hours.
             last_map = seed
 
             for m_name, m in mappings.items():
+
                 for dst, src, rng in zip(m["dst"], m["src"], m["rng"]):
                     this_map = last_map # Default case; straight mapping.
                     if src <= last_map < (src + rng):
                         this_map = last_map - src + dst
                         break
-                last_map = this_map
-            seed_locs.append(last_map)
 
-    print(seed_locs)
-    return min(seed_locs)
+                last_map = this_map
+
+            if seed_locs is None or last_map < seed_locs:
+                seed_locs = last_map
+
+    return seed_locs
 
 
 # ####################################
