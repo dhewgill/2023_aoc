@@ -31,8 +31,8 @@ def main(argv=None):
     print(f"d6p1 = {margin}") # 4811940
 
     # Part 2.
-    do_d6p2(P2_DATFILE)
-    print(f"d6p2 = {None}")
+    win_count = do_d6p2(P2_DATFILE)
+    print(f"d6p2 = {win_count}") # 30077773
 
     print("\n\nEnd")
 
@@ -51,6 +51,20 @@ def parse_sheet(sheet: list) -> dict:
     return parsed
 
 
+def get_win_count(tm: int, dst: int) -> int:
+    """
+    Get the win count for a single race.
+    The distance travelled is symmetrical around the the midpoint of time
+    so only iterate until the first win.
+    The total number of wins is then:
+        total_time - 2 * t_first_win + 1
+    """
+    for i in range(1, tm):
+        d = i * (tm - i)
+        if d > dst:
+            return tm - (2 * i) + 1
+
+
 def do_d6p1(fpath: str) -> int:
     flines = parse_file(fpath)
     sheet = parse_sheet(flines)
@@ -58,12 +72,8 @@ def do_d6p1(fpath: str) -> int:
 
     success_margin = 1
     for t, d in zip(sheet["times"], sheet["distances"]):
-        win_count = 0
-        for i in range(1, t):
-            this_d = i * (t - i)
-            #print(f"{i}: {this_d}")
-            if this_d > d:
-                win_count += 1
+        win_count = get_win_count(t, d)
+        #print(win_count)
         success_margin *= win_count
 
     return success_margin
@@ -71,8 +81,11 @@ def do_d6p1(fpath: str) -> int:
 
 def do_d6p2(fpath: str) -> int:
     flines = parse_file(fpath)
+    sheet = parse_sheet(flines)
+    t = int("".join(f"{t}" for t in sheet["times"]))
+    d = int("".join(f"{t}" for t in sheet["distances"]))
 
-    return None
+    return get_win_count(t, d)
 
 
 # ####################################
