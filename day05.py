@@ -31,8 +31,8 @@ def main(argv=None):
     print(f"d5p1 = {loc}") # 157211394
 
     # Part 2.
-    do_d5p2(P2_DATFILE)
-    print(f"d5p2 = {None}")
+    loc2 = do_d5p2(P2_DATFILE)
+    print(f"d5p2 = {loc2}")
 
     print("\n\nEnd")
 
@@ -109,9 +109,31 @@ def do_d5p1(fpath: str) -> int:
 
 
 def do_d5p2(fpath: str) -> int:
-    #flines = parse_file(fpath)
+    flines = parse_file(fpath)
 
-    return None
+    seeds = parse_seeds(flines)
+    #print(seeds)
+    mappings = parse_mappings(flines)
+    #print(mappings)
+
+    seed_rngs = [(s, sr) for s, sr in zip(seeds[::2], seeds[1::2])]
+    print(seed_rngs)
+    seed_locs = []
+    for seed_s, seed_rng in seed_rngs:
+        for seed in range(seed_s, seed_s + seed_rng): # <- Horribly inefficient, and never finishes.
+            last_map = seed
+
+            for m_name, m in mappings.items():
+                for dst, src, rng in zip(m["dst"], m["src"], m["rng"]):
+                    this_map = last_map # Default case; straight mapping.
+                    if src <= last_map < (src + rng):
+                        this_map = last_map - src + dst
+                        break
+                last_map = this_map
+            seed_locs.append(last_map)
+
+    print(seed_locs)
+    return min(seed_locs)
 
 
 # ####################################
