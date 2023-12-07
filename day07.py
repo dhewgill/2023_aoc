@@ -11,7 +11,7 @@ from common import parse_file
 
 # ####################################
 # --------------  Main  --------------
-P1_DATFILE = r".\data\d7p1.dat"
+P1_DATFILE = r".\data\d7p1_eg.dat"
 P2_DATFILE = P1_DATFILE
 
 def main(argv=None):
@@ -120,6 +120,50 @@ class Hand:
     def __repr__(self):
         return f"({self.hand}, {self.bid}, {self.hand_rank})"
 
+class HandJoker(Hand):
+    card_rank = {
+        "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
+        "T": 10, "J": 1, "Q": 12, "K": 13, "A": 14,
+    }
+
+    def _classify_hand(self) -> int:
+        this_hand = -1
+        card_count = Counter(self.hand)
+        most_common = card_count.most_common()
+
+        if most_common[0][1] == 5:
+            this_hand = self.hand_ranks["five"]
+
+        elif most_common[0][1] == 4:
+            if "J" not in self.hand:
+                this_hand = self.hand_ranks["four"]
+            else:
+                this_hand = self.hand_ranks["five"]
+
+        elif most_common[0][1] == 3:
+            if "J" in self.hand:
+                if card_count["J"] == 2:
+                    this_hand = self.hand_ranks["five"]
+                elif card_count["J"] == 1:
+                    this_hand = self.hand_ranks["four"]
+            elif most_common[1][1] == 2:
+                this_hand = self.hand_ranks["full"]
+            else:
+                this_hand = self.hand_ranks["three"]
+
+        elif most_common[0][1] == 2:
+            if "J" in self.hand:
+                if card_count["J"] == 3:
+                    pass
+            elif most_common[1][1] == 2:
+                this_hand = self.hand_ranks["pair2"]
+            else:
+                this_hand = self.hand_ranks["pair"]
+
+        else:
+            this_hand = self.hand_ranks["high"]
+
+        return this_hand
 
 def do_d7p1(fpath: str):
     flines = parse_file(fpath)
