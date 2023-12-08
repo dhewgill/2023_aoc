@@ -4,6 +4,7 @@ Haunted Wasteland
 """
 import argparse
 import logging
+from math import gcd
 import sys
 
 from common import parse_file
@@ -31,8 +32,8 @@ def main(argv=None):
     print(f"d8p1 = {steps}") # 13207
 
     # Part 2.
-    _ = do_d8p2(P2_DATFILE)
-    print(f"d8p2 = {None}")
+    ghost_steps = do_d8p2(P2_DATFILE)
+    print(f"d8p2 = {ghost_steps}")
 
     print("\n\nEnd")
 
@@ -51,20 +52,21 @@ def parse_network(network: list) -> dict:
 
     return net_map
 
+
 def do_d8p1(fpath: str) -> int:
     flines = parse_file(fpath)
-    instructions = flines[0]
+    directions = flines[0]
 
-    the_map = parse_network(flines[2:])
-    #print(the_map)
+    nodes = parse_network(flines[2:])
+    #print(nodes)
 
     end_node = "ZZZ"
     steps = 1
     node = "AAA"
     found = False
     while not found:
-        for d in instructions:
-            next_node = the_map[node][d]
+        for d in directions:
+            next_node = nodes[node][d]
             if next_node == end_node:
                 found = True
                 break
@@ -74,10 +76,55 @@ def do_d8p1(fpath: str) -> int:
     return steps
 
 
+class Node:
+    def __init__(self, node_map, start_node):
+        self.node_map = node_map
+        self.start_node = start_node
+        self.current_node = start_node
+
+    def advance(self, direction):
+        """
+        'direction' is 'L' or 'R'.
+        """
+        # new_node = self.node_map[self.current_node][direction]
+        # print(f"Move from {self.current_node} -> {new_node}")
+        self.current_node = self.node_map[self.current_node][direction]
+
+
 def do_d8p2(fpath: str) -> int:
     flines = parse_file(fpath)
+    directions = flines[0]
 
-    return -1
+    nodes = parse_network(flines[2:])
+    #print(nodes)
+
+    start_nodes = list(Node(nodes, n) for n in nodes if n[-1] == "A")
+    print(f"Found {len(start_nodes)} start nodes.")
+
+    steps = 1
+
+    steps_to_end = {n: 0 for n in start_nodes}
+    while start_nodes:
+        for d in directions:
+            for node in start_nodes.copy():
+                node.advance(d)
+                if node.current_node[-1] == "Z":
+                    steps_to_end[node] = steps
+                    print(f"Remove node at step {steps}")
+                    start_nodes.remove(node)
+
+            if start_nodes == []:
+                break
+
+            steps += 1
+
+    print(steps_to_end)
+    steps = 1
+    _gcd = gcd(*steps_to_end.values())
+    print(_gcd)
+    for v in steps_to_end.values():
+        steps *= v
+    return int(steps / _gcd)
 
 
 # ####################################
