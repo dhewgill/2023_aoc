@@ -131,25 +131,26 @@ class HandJoker(Hand):
         card_count = Counter(self.hand)
         most_common = card_count.most_common()
 
+        if "J" not in self.hand:
+            # If there are no jokers then just use the original hand
+            # classification method.
+            return super()._classify_hand()
+
+        # There are jokers.
+        # Jokers add to cards 'most favourably'.
+        if most_common[0][0] == "J" and most_common[0][1] > most_common[1][1]:
+            # The most common card is a joker.
+            pass
+        
         if most_common[0][1] == 5:
             this_hand = self.hand_ranks["five"]
 
         elif most_common[0][1] == 4:
-            if "J" not in self.hand:
-                this_hand = self.hand_ranks["four"]
-            else:
-                this_hand = self.hand_ranks["five"]
+            this_hand = self.hand_ranks["five"]
 
         elif most_common[0][1] == 3:
-            if "J" in self.hand:
-                if card_count["J"] == 2:
-                    this_hand = self.hand_ranks["five"]
-                elif card_count["J"] == 1:
-                    this_hand = self.hand_ranks["four"]
-            elif most_common[1][1] == 2:
-                this_hand = self.hand_ranks["full"]
-            else:
-                this_hand = self.hand_ranks["three"]
+            # If the most common is not a 'J', then 4 or 5.
+            this_hand = self.hand_ranks["three"]
 
         elif most_common[0][1] == 2:
             if "J" in self.hand:
