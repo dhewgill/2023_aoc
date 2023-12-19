@@ -4,7 +4,7 @@ Haunted Wasteland
 """
 import argparse
 import logging
-from math import gcd
+from math import gcd, lcm
 import sys
 
 from common import parse_file
@@ -89,22 +89,48 @@ class Node:
         # new_node = self.node_map[self.current_node][direction]
         # print(f"Move from {self.current_node} -> {new_node}")
         self.current_node = self.node_map[self.current_node][direction]
+    
+    def traversal_stats(self, directions: str) -> tuple:
+        steps_to_first_stop = 1
+        period = 1 # Number of steps to return to start.
+        steps = 1
+        current_node = self.start_node
+        while steps_to_first_stop == 1:
+            for d in directions:
+                current_node = self.node_map[current_node][d]
+                if current_node == self.node_map[self.start_node]:
+                    period = steps
+                
+                elif current_node[-1] == "Z":
+                    steps_to_first_stop = steps
+                
+                steps += 1
+        
+        return (steps_to_first_stop, period)
 
 
 def do_d8p2(fpath: str) -> int:
     flines = parse_file(fpath)
     directions = flines[0]
+    print(f"Number of directions = {len(directions)}")
 
     nodes = parse_network(flines[2:])
     #print(nodes)
 
-    start_nodes = list(Node(nodes, n) for n in nodes if n[-1] == "A")
+    start_nodes = [Node(nodes, n) for n in nodes if n[-1] == "A"]
     print(f"Found {len(start_nodes)} start nodes.")
+
+    # trapped_nodes = [n for n, v in nodes.items() if ((v["L"][-1] == "Z") and (v["R"][-1] == "Z"))]
+    # print(f"Found {len(trapped_nodes)} trapped nodes.")
+
+    # for n in start_nodes:
+    #     f_stop, per = n.traversal_stats(directions)
+    #     print(f"{n}: first stop = {f_stop}, period = {per}")
 
     steps = 1
 
     steps_to_end = {n: 0 for n in start_nodes}
-    while start_nodes:
+    while start_nodes != []:
         for d in directions:
             for node in start_nodes.copy():
                 node.advance(d)
@@ -118,13 +144,20 @@ def do_d8p2(fpath: str) -> int:
 
             steps += 1
 
-    print(steps_to_end)
+    #print(steps_to_end)
     steps = 1
     _gcd = gcd(*steps_to_end.values())
-    print(_gcd)
-    for v in steps_to_end.values():
-        steps *= v
-    return int(steps / _gcd)
+    print(f"GCD = {_gcd}")
+
+    _lcm = lcm(*steps_to_end.values())
+    print(f"LCM = {_lcm}")
+
+    _lcm_2 = lcm(*(int(s/_gcd) for s in steps_to_end.values()))
+    print(f"LCM for steps/gcd = {_lcm_2}")
+
+    # for v in steps_to_end.values():
+    #     steps *= v
+    return int(_lcm / _gcd) #int(steps / _gcd)
 
 
 # ####################################
