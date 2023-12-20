@@ -32,7 +32,7 @@ def main(argv=None):
 
     # Part 2.
     cumulative_history_2 = do_d9p2(P2_DATFILE)
-    print(f"d9p2 = {cumulative_history_2}")
+    print(f"d9p2 = {cumulative_history_2}") # 964
 
     print("\n\nEnd")
 
