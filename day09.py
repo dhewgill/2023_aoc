@@ -31,15 +31,15 @@ def main(argv=None):
     print(f"d9p1 = {cumulative_history}") # 1904165718
 
     # Part 2.
-    do_d9p2(P2_DATFILE)
-    print(f"d9p2 = {None}")
+    cumulative_history_2 = do_d9p2(P2_DATFILE)
+    print(f"d9p2 = {cumulative_history_2}")
 
     print("\n\nEnd")
 
 
 # ####################################
 # --------------  Util  --------------
-def get_history(reading: list) -> int:
+def get_history(reading: list, p2: bool=False) -> int:
     new_seq = []
     r_last = reading[0]
     for r in reading[1:]:
@@ -47,7 +47,9 @@ def get_history(reading: list) -> int:
         r_last = r
     if all(n==0 for n in new_seq):
         return 0
-    return new_seq[-1] + get_history(new_seq)
+    if p2:
+        return new_seq[0] - get_history(new_seq, p2)
+    return new_seq[-1] + get_history(new_seq, p2)
 
 
 def do_d9p1(fpath: str) -> int:
@@ -63,7 +65,14 @@ def do_d9p1(fpath: str) -> int:
 
 def do_d9p2(fpath: str) -> int:
     flines = parse_file(fpath)
-    return None
+
+    cumulative_history = 0
+    for l in flines:
+        seq = [int(i) for i in l.split()]
+        cumulative_history += seq[0] - get_history(seq, True)
+        print(f"Cumulative History = {cumulative_history}")
+
+    return cumulative_history
 
 
 # ####################################
