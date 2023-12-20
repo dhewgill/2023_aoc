@@ -4,7 +4,9 @@ If You Give A Seed A Fertilizer
 """
 import argparse
 import logging
+from multiprocessing import Pool
 import sys
+from time import monotonic
 
 from common import parse_file
 
@@ -108,6 +110,33 @@ def do_d5p1(fpath: str) -> int:
     return min(seed_locs)
 
 
+def process_seed(seed_rng: tuple, mappings: dict) -> int:
+    seed_s, seed_e = seed_rng
+    print(f"Processing seeds: {seed_s} -> {seed_s + seed_e - 1}")
+    this_map = None
+    seed_loc = None
+    ts = monotonic()
+    for seed in range(seed_s, seed_s + seed_e): # <- Horribly inefficient, finishes in hours.
+        last_map = seed
+
+        for m_name, m in mappings.items():
+
+            for dst, src, rng in zip(m["dst"], m["src"], m["rng"]):
+                this_map = last_map # Default case; straight mapping.
+                if src <= last_map < (src + rng):
+                    this_map = last_map - src + dst
+                    break
+
+            last_map = this_map
+
+        if seed_loc is None or last_map < seed_loc:
+            seed_loc = last_map
+
+    te = monotonic()
+    print(f"{seed_rng}: Minumum seed location = {seed_loc}, [t = {te-ts:0.3f}s]")
+    return seed_loc
+
+
 def do_d5p2(fpath: str) -> int:
     flines = parse_file(fpath)
 
@@ -119,28 +148,11 @@ def do_d5p2(fpath: str) -> int:
     seed_rngs = tuple((s, sr) for s, sr in zip(seeds[::2], seeds[1::2]))
     print(seed_rngs)
     seed_locs = None
-    for i, seeds_rng in enumerate(seed_rngs): #seed_s, seed_rng in seed_rngs:
+    with Pool(len(seed_rngs)) as p:
+        seed_locs = p.starmap(process_seed, ((sr, mappings) for sr in seed_rngs))
+    print(seed_locs)
 
-        seed_s, seed_rng = seeds_rng
-        print(f"Processing seeds: {seed_s}, {seed_rng} [{i} of {len(seed_rngs)}]")
-
-        for seed in range(seed_s, seed_s + seed_rng): # <- Horribly inefficient, finishes in hours.
-            last_map = seed
-
-            for m_name, m in mappings.items():
-
-                for dst, src, rng in zip(m["dst"], m["src"], m["rng"]):
-                    this_map = last_map # Default case; straight mapping.
-                    if src <= last_map < (src + rng):
-                        this_map = last_map - src + dst
-                        break
-
-                last_map = this_map
-
-            if seed_locs is None or last_map < seed_locs:
-                seed_locs = last_map
-
-    return seed_locs
+    return min(seed_locs)
 
 
 # ####################################
